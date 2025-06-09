@@ -1,0 +1,9 @@
+CZI Image Metadata Summary
+========================================
+
+File: WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM.czi
+- Acquisition Date: N/A
+- Microscope Model: N/A
+- Pixel Size: N/A µm (X), N/A µm (Y)
+- Processing Timestamp: 2025-06-09 19:34:41
+
