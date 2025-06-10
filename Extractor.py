@@ -6,6 +6,7 @@ from skimage import exposure
 import os
 import tifffile
 from datetime import datetime
+import shutil
 
 
 def parse_czi_metadata(metadata_xml: str, filename: str) -> dict:
@@ -50,7 +51,6 @@ def display_czi_images(input_path: str):
                 image = czi.asarray()
                 metadata_xml = czi.metadata() if callable(czi.metadata) else czi.metadata
 
-
                 metadata = parse_czi_metadata(metadata_xml, czi_filename) if isinstance(metadata_xml,
                                                                                         (str, bytes)) else {}
 
@@ -59,21 +59,17 @@ def display_czi_images(input_path: str):
                 for k, v in metadata.items():
                     print(f"{k.replace('_', ' ').title():>20}: {v}")
 
-
                 print(f"\n{' IMAGE DATA ':=^40}")
                 print(f"Original shape: {image.shape}")
                 image_squeezed = np.squeeze(image)
                 print(f"Processed shape: {image_squeezed.shape}")
 
-
                 if image_squeezed.ndim == 3 and image_squeezed.shape[0] == 3:
                     print("\nProcessing 3-channel image with correct color mapping...")
-
 
                     ch0 = exposure.rescale_intensity(image_squeezed[0], out_range=(0, 1))  # Blue
                     ch1 = exposure.rescale_intensity(image_squeezed[1], out_range=(0, 1))  # Green
                     ch2 = exposure.rescale_intensity(image_squeezed[2], out_range=(0, 1))  # Red
-
 
                     rgb_composite = np.stack([ch2, ch1, ch0], axis=-1)  # RGB order
                     print('shape', rgb_composite.shape)
@@ -83,14 +79,11 @@ def display_czi_images(input_path: str):
                     ch1_green = np.stack([np.zeros_like(ch1), ch1, np.zeros_like(ch1)], axis=-1)  # Green
                     ch2_red = np.stack([np.zeros_like(ch2), np.zeros_like(ch2), ch2], axis=-1)  # Red
 
-
                     fig, axes = plt.subplots(2, 2, figsize=(10, 10))
-
 
                     axes[0, 0].imshow(rgb_composite)
                     axes[0, 0].set_title("Composite (R=Ch2, G=Ch1, B=Ch0)")
                     axes[0, 0].axis('off')
-
 
                     axes[0, 1].imshow(ch2_red)
                     axes[0, 1].set_title("Channel 0 (Blue)")
@@ -109,7 +102,6 @@ def display_czi_images(input_path: str):
                     plt.show()
 
                 elif image_squeezed.ndim == 3:
-
                     fig, axes = plt.subplots(1, image_squeezed.shape[0], figsize=(15, 5))
                     for c in range(image_squeezed.shape[0]):
                         channel = image_squeezed[c]
@@ -154,14 +146,11 @@ def convert_czi_to_tiff(czi_path: str, output_folder: str, metadata: dict):
         image = czi.asarray()
         image_squeezed = np.squeeze(image)
 
-
         if image_squeezed.ndim == 3 and image_squeezed.shape[0] == 3:
             image_squeezed = image_squeezed[::-1]
 
-
         base_name = os.path.splitext(os.path.basename(czi_path))[0]
         tiff_path = os.path.join(output_folder, f"{base_name}.tif")
-
 
         tifffile.imwrite(
             tiff_path,
@@ -184,7 +173,6 @@ def plot_tiff_image(tiff_path: str):
 
         plt.figure(figsize=(10, 6))
 
-
         if image.dtype == np.uint16:
             image = image.astype(np.float32) / 65535.0
         elif image.dtype == np.uint8:
@@ -205,7 +193,24 @@ def plot_tiff_image(tiff_path: str):
             plt.show()
 
 
-def process_czi_file(czi_path: str, output_folder: str, metadata_list: list):
+def find_matching_true_folder(czi_filename: str, true_root_folder: str) -> str:
+    """
+    Find matching folder in the True directory based on filename patterns.
+    Returns the full path if found, None otherwise.
+    """
+    # Extract the base pattern from the CZI filename (e.g., "WT_NADA_RADA_HADA_NHS_40min_ROI1")
+    base_pattern = czi_filename.split('.')[0]  # Remove extension
+    base_pattern = '_'.join(base_pattern.split('_')[:-1])  # Remove last part (like "SIM" or "DIC")
+
+    # Search through all subfolders in the True folder
+    for root, dirs, files in os.walk(true_root_folder):
+        for dir_name in dirs:
+            if base_pattern in dir_name:
+                return os.path.join(root, dir_name)
+    return None
+
+
+def process_czi_file(czi_path: str, output_folder: str, metadata_list: list, true_root_folder: str = None):
     """Process a single CZI file automatically without user confirmation."""
     base_name = os.path.basename(czi_path)
     print(f"Processing {base_name}...")
@@ -214,19 +219,24 @@ def process_czi_file(czi_path: str, output_folder: str, metadata_list: list):
         metadata_xml = czi.metadata() if callable(czi.metadata) else czi.metadata
         metadata = parse_czi_metadata(metadata_xml, base_name) if isinstance(metadata_xml, (str, bytes)) else {}
 
-        # Convert and save
+        # Convert and save to main output folder (train data)
         tiff_path = convert_czi_to_tiff(czi_path, output_folder, metadata)
         print(f"Saved TIFF: {tiff_path}")
 
-        metadata_list.append(metadata)
+        # If true_root_folder is provided, look for matching folder and save there
+        if true_root_folder:
+            matching_folder = find_matching_true_folder(base_name, true_root_folder)
+            if matching_folder:
+                true_tiff_path = os.path.join(matching_folder, os.path.basename(tiff_path))
+                shutil.copy2(tiff_path, true_tiff_path)
+                print(f"Also saved to True folder: {true_tiff_path}")
 
-        # Uncomment to display each processed image
-        # plot_tiff_image(tiff_path)
+        metadata_list.append(metadata)
 
     return True
 
 
-def process_all_czi_files(raw_folder: str, output_folder: str):
+def process_all_czi_files(raw_folder: str, output_folder: str, true_root_folder: str = None):
     """Process all CZI files in the folder automatically."""
     os.makedirs(output_folder, exist_ok=True)
 
@@ -245,7 +255,7 @@ def process_all_czi_files(raw_folder: str, output_folder: str):
     for czi_file in czi_files:
         czi_path = os.path.join(raw_folder, czi_file)
         try:
-            process_czi_file(czi_path, output_folder, metadata_list)
+            process_czi_file(czi_path, output_folder, metadata_list, true_root_folder)
             processed_files.append(czi_file)
         except Exception as e:
             print(f"Error processing {czi_file}: {str(e)}")
@@ -269,9 +279,7 @@ def enhance_brightness(image: np.ndarray, brightness_factor: float = 1.2) -> np.
     Returns:
         Brightness-enhanced image
     """
-
     original_dtype = image.dtype
-
 
     if original_dtype == np.uint16:
         image = image.astype(np.float32) / 65535.0
@@ -280,9 +288,7 @@ def enhance_brightness(image: np.ndarray, brightness_factor: float = 1.2) -> np.
     else:
         image = image.astype(np.float32)
 
-
     enhanced = np.clip(image * brightness_factor, 0, 1)
-
 
     if original_dtype == np.uint16:
         enhanced = (enhanced * 65535).astype(np.uint16)
@@ -315,12 +321,10 @@ def process_and_save_brightness_tiff(input_path: str, output_path: str, brightne
             'TileOffsets', 'TileByteCounts'
         }
 
-
         metadata = {}
         for tag in tif.pages[0].tags.values():
             if tag.name not in exclude_tags:
                 try:
-
                     if isinstance(tag.value, (str, int, float)):
                         metadata[tag.name] = tag.value
                     elif hasattr(tag.value, '__str__'):
@@ -372,15 +376,20 @@ def process_all_tiff_brightness(input_folder: str, output_folder: str, brightnes
 
 
 if __name__ == "__main__":
-    #original folder
+    # Define paths
     raw_folder = r"C:\Users\zindi\PycharmProjects\P2\unpacked images\Raw"
     output_folder = r"C:\Users\zindi\PycharmProjects\P2\train data"
     brightness_folder = r"C:\Users\zindi\PycharmProjects\P2\train_brightness"
+    true_root_folder = r"C:\Users\zindi\PycharmProjects\P2\unpacked images\True"
 
     print(f"Processing {raw_folder}...")
-    #display_czi_images(raw_folder) # use this for quick visualization before processing
-    process_all_czi_files(raw_folder, output_folder)
+    # Uncomment to display images before processing
+    # display_czi_images(raw_folder)
 
+    # Process all CZI files (saves to both train data and matching True folders)
+    process_all_czi_files(raw_folder, output_folder, true_root_folder)
+
+    # Create brightness folder if it doesn't exist
     os.makedirs(brightness_folder, exist_ok=True)
 
     # Process for brightness enhancement
