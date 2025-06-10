@@ -7,7 +7,7 @@ scripts = [
     ["Denoising.py"],
     ["Segmentaion.py"],
     ["IOU.py"],
-    ["Grow rate and intensity.py", "--pipeline"]  # Add the flag for pipeline mode
+    ["Grow rate and intensity.py", "--pipeline"]
 ]
 
 for script in scripts:
@@ -15,20 +15,20 @@ for script in scripts:
         print(f"Running {' '.join(script)}...")
         start_time = time.time()
 
-        # Run script and wait for completion
+
         result = subprocess.run(
-            ["python"] + script,  # Combine the command and arguments
+            ["python"] + script,
             check=True,
             text=True,
             capture_output=True
         )
 
-        # Print output and time taken
+
         print(result.stdout)
         elapsed = time.time() - start_time
         print(f"{' '.join(script)} completed in {elapsed:.2f} seconds")
 
-        # Add sleep time between scripts
+
         time.sleep(1.0)  # 1 second pause between scripts
 
     except subprocess.CalledProcessError as e:

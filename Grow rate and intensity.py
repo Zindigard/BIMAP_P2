@@ -38,7 +38,6 @@ def load_data(mask_path, image_path):
 def display_image(ax, image):
     """Display image with proper scaling based on dtype"""
     if image.dtype == np.uint16:
-        # For 16-bit images, scale to 0-1 float range for display
         display_img = image.astype(np.float32) / 65535.0
     elif image.dtype in [np.float32, np.float64]:
         display_img = np.clip(image, 0, 1)
@@ -171,7 +170,7 @@ def analyze_image_pair(mask_path, image_path, pipeline_mode=False):
         print(f"  Minor Axis: {minor_px:.1f} px")
         print(f"  Growth Rate (half axis): {growth_rate:.2f} mm/min")
 
-        # Plot intensity distributions for this cell
+
         plot_cell_intensities(image, masks, cell_num)
 
     if len(selected_cells) > 0:
@@ -192,7 +191,7 @@ def main():
     sam_folder = Path(r"C:\Users\zindi\PycharmProjects\P2\Evaluations\SAM")
     brightness_folder = Path(r"C:\Users\zindi\PycharmProjects\P2\train_brightness")
 
-    # Find matching files
+
     file_pairs = find_matching_files(sam_folder, brightness_folder)
 
     if not file_pairs:
@@ -200,7 +199,6 @@ def main():
         return
 
     if args.pipeline:
-        # Pipeline mode - process all files with predefined cells
         for mask_path, image_path in file_pairs:
             analyze_image_pair(mask_path, image_path, pipeline_mode=True)
     else:
@@ -209,18 +207,18 @@ def main():
         for i, (mask_path, image_path) in enumerate(file_pairs, 1):
             print(f"{i}: {mask_path.name} with {image_path.name}")
 
-        # Get user selection
+
         while True:
             try:
                 selection = input(f"\nEnter which file to process (1-{len(file_pairs)}), or 'all': ")
 
                 if selection.lower() == 'all':
-                    # Process all files
+
                     for mask_path, image_path in file_pairs:
                         analyze_image_pair(mask_path, image_path)
                     break
                 else:
-                    # Process single selected file
+
                     selected_idx = int(selection) - 1
                     if 0 <= selected_idx < len(file_pairs):
                         mask_path, image_path = file_pairs[selected_idx]
