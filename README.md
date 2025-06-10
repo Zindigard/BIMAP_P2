@@ -1,4 +1,3 @@
-# bimap_p2
 # BIMAP-P2: Characterizing Bacteria Using Shape Descriptors
 
 This project focuses on characterizing bacterial cells through image segmentation, growth rate analysis, and 3D shape reconstruction. The goal is to provide an automated and quantifiable solution for understanding bacterial behavior, including peptide distribution, growth rates, and cellular morphology. This project employs advanced image processing techniques such as **Cellpose segmentation**, **3D reconstruction**, and evaluation metrics for performance.
