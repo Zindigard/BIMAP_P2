@@ -12,7 +12,7 @@ from typing import Tuple, Dict, List
 
 
 def load_image(file_path: Path) -> np.ndarray:
-    """Load normalize image to float32 [0,1] range.
+    """Load and normalize image to float32 [0,1] range.
 
     Args:
         file_path: Path to the image file
@@ -24,7 +24,6 @@ def load_image(file_path: Path) -> np.ndarray:
         warnings.simplefilter("ignore")
         img = io.imread(file_path)
 
-
     if len(img.shape) == 2:
         img = np.stack((img,) * 3, axis=-1)
     elif img.shape[2] == 1:
@@ -35,14 +34,12 @@ def load_image(file_path: Path) -> np.ndarray:
     print(f"Loaded: {file_path.name} | Shape: {img.shape} | Type: {img.dtype} | "
           f"Original Range: [{img.min()}, {img.max()}]")
 
-
     if img.dtype == np.uint16:
         img = img.astype(np.float32) / 65535.0
     elif img.dtype == np.uint8:
         img = img.astype(np.float32) / 255.0
     else:
         img = img_as_float32(img)
-
 
     img = np.clip(img, 0.0, 1.0)
     return img
@@ -58,7 +55,6 @@ def adaptive_denoise_channel(channel: np.ndarray, sigma: float = 0.1) -> np.ndar
     Returns:
         Denoised channel in original range
     """
-
     channel_norm = (channel - channel.mean()) / (channel.std() + 1e-8)
 
     # BM3D denoising with adaptive parameters
@@ -68,12 +64,8 @@ def adaptive_denoise_channel(channel: np.ndarray, sigma: float = 0.1) -> np.ndar
         stage_arg=bm3d.BM3DStages.ALL_STAGES
     )
 
-
     denoised = (denoised * channel.std()) + channel.mean()
-
-
     denoised = ndimage.gaussian_filter(denoised, sigma=0.5)
-
 
     return np.clip(denoised, 0.0, 1.0)
 
@@ -96,8 +88,6 @@ def enhanced_denoise_rgb(img: np.ndarray, sigma: float = 0.1) -> np.ndarray:
         denoised_channels.append(denoised)
 
     denoised_img = np.stack(denoised_channels, axis=-1)
-
-
     denoised_img = (denoised_img - denoised_img.min()) / \
                    (denoised_img.max() - denoised_img.min() + 1e-10)
 
@@ -123,7 +113,6 @@ def calculate_quality_metrics(original: np.ndarray, denoised: np.ndarray) -> Dic
     metrics = {}
     data_range = 1.0
 
-
     metrics['ssim'] = ssim(
         original, denoised,
         win_size=7,
@@ -132,7 +121,6 @@ def calculate_quality_metrics(original: np.ndarray, denoised: np.ndarray) -> Dic
         gaussian_weights=True
     )
 
-
     metrics['ssim_channels'] = [
         ssim(original[:, :, c], denoised[:, :, c],
              data_range=data_range,
@@ -140,11 +128,8 @@ def calculate_quality_metrics(original: np.ndarray, denoised: np.ndarray) -> Dic
              gaussian_weights=True) for c in range(3)
     ]
 
-
     metrics['mse'] = np.mean((original - denoised) ** 2)
     metrics['psnr'] = psnr(original, denoised, data_range=data_range)
-
-
     metrics['ncc'] = np.corrcoef(original.ravel(), denoised.ravel())[0, 1]
 
     return metrics
@@ -160,12 +145,10 @@ def visualize_comparison(original: np.ndarray, denoised: np.ndarray, metrics: Di
     """
     fig = plt.figure(figsize=(18, 6))
 
-
     ax1 = plt.subplot(1, 3, 1)
     ax1.imshow(original)
     ax1.set_title(f"Original Image\nRange: [{original.min():.2f}, {original.max():.2f}]")
     ax1.axis('off')
-
 
     ax2 = plt.subplot(1, 3, 2)
     ax2.imshow(denoised)
@@ -190,6 +173,61 @@ def visualize_comparison(original: np.ndarray, denoised: np.ndarray, metrics: Di
     plt.show()
 
 
+def save_metrics_to_txt(metrics: Dict, file_path: Path, mode: str = 'a'):
+    """Save metrics dictionary to a text file in a readable format.
+
+    Args:
+        metrics: Dictionary containing quality metrics
+        file_path: Path to the output text file
+        mode: File write mode ('w' for write, 'a' for append)
+    """
+    with open(file_path, mode) as f:
+        f.write("\n=== Image Metrics ===\n")
+        for key, value in metrics.items():
+            if isinstance(value, list):
+                f.write(f"{key}: {[f'{x:.4f}' for x in value]}\n")
+            else:
+                f.write(f"{key}: {value:.4f}\n")
+        f.write("\n")
+
+
+def save_summary_to_txt(results: List[Dict], file_path: Path):
+    """Save aggregated statistics to a text file.
+
+    Args:
+        results: List of metrics dictionaries from all processed images
+        file_path: Path to the output text file
+    """
+    if not results:
+        return
+
+    ssim_values = [x['ssim'] for x in results]
+    psnr_values = [x['psnr'] for x in results]
+    mse_values = [x['mse'] for x in results]
+
+    with open(file_path, 'w') as f:
+        f.write("=== Final Summary Statistics ===\n\n")
+        f.write(f"Total Images Processed: {len(results)}\n\n")
+
+        f.write("SSIM Statistics:\n")
+        f.write(f"- Average: {np.mean(ssim_values):.4f}\n")
+        f.write(f"- Median: {np.median(ssim_values):.4f}\n")
+        f.write(f"- Range: [{np.min(ssim_values):.4f}, {np.max(ssim_values):.4f}]\n")
+        f.write(f"- Std Dev: {np.std(ssim_values):.4f}\n\n")
+
+        f.write("PSNR Statistics:\n")
+        f.write(f"- Average: {np.mean(psnr_values):.2f} dB\n")
+        f.write(f"- Median: {np.median(psnr_values):.2f} dB\n")
+        f.write(f"- Range: [{np.min(psnr_values):.2f}, {np.max(psnr_values):.2f}] dB\n")
+        f.write(f"- Std Dev: {np.std(psnr_values):.2f}\n\n")
+
+        f.write("MSE Statistics:\n")
+        f.write(f"- Average: {np.mean(mse_values):.6f}\n")
+        f.write(f"- Median: {np.median(mse_values):.6f}\n")
+        f.write(f"- Range: [{np.min(mse_values):.6f}, {np.max(mse_values):.6f}]\n")
+        f.write(f"- Std Dev: {np.std(mse_values):.6f}\n")
+
+
 def process_single_image(file_path: Path, output_dir: Path, sigma: float = 0.1,
                          overwrite: bool = False) -> Tuple[bool, Dict]:
     """Complete processing pipeline with enhanced metrics.
@@ -204,6 +242,7 @@ def process_single_image(file_path: Path, output_dir: Path, sigma: float = 0.1,
         Tuple of (success_flag, metrics_dict)
     """
     output_path = output_dir / f"{file_path.stem}_denoised.tif"
+    metrics_file = output_dir / "denoising_metrics.txt"
 
     if output_path.exists() and not overwrite:
         print(f"Skipped (exists): {output_path.name}")
@@ -212,13 +251,8 @@ def process_single_image(file_path: Path, output_dir: Path, sigma: float = 0.1,
     try:
         print(f"\nProcessing: {file_path.name}")
         img = load_image(file_path)
-
-
         denoised = enhanced_denoise_rgb(img, sigma)
-
-
         metrics = calculate_quality_metrics(img, denoised)
-
 
         print("\nQuality Metrics:")
         print(f"- SSIM: {metrics['ssim']:.4f} (Channels: {[f'{x:.4f}' for x in metrics['ssim_channels']]})")
@@ -226,7 +260,7 @@ def process_single_image(file_path: Path, output_dir: Path, sigma: float = 0.1,
         print(f"- MSE: {metrics['mse']:.6f}")
         print(f"- NCC: {metrics['ncc']:.4f}")
 
-        # Save and visualize
+        # Save denoised image
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if img.dtype == np.uint16:
@@ -235,6 +269,7 @@ def process_single_image(file_path: Path, output_dir: Path, sigma: float = 0.1,
                 io.imsave(output_path, (denoised * 255).astype(np.uint8))
 
         print(f"Saved: {output_path}")
+        save_metrics_to_txt(metrics, metrics_file)  # Save metrics to TXT
 
         visualize_comparison(img, denoised, metrics)
         return True, metrics
@@ -245,7 +280,7 @@ def process_single_image(file_path: Path, output_dir: Path, sigma: float = 0.1,
 
 
 def batch_process(input_dir: str, output_dir: str, sigma: float = 0.1, overwrite: bool = False):
-    """Batch process with comprehensive reporting.
+    """Batch process with comprehensive reporting and metrics saving.
 
     Args:
         input_dir: Input directory path
@@ -275,10 +310,12 @@ def batch_process(input_dir: str, output_dir: str, sigma: float = 0.1, overwrite
             results.append(metrics)
 
     if results:
+        save_summary_to_txt(results, output_dir / "denoising_metrics.txt")  # Save final summary
+        print(f"\nAll metrics saved to: {output_dir / 'denoising_metrics.txt'}")
+
         print("\n\n=== Final Summary ===")
         print(f"Processed {len(results)} images successfully")
 
-        # Aggregate metrics
         ssim_values = [x['ssim'] for x in results]
         psnr_values = [x['psnr'] for x in results]
         mse_values = [x['mse'] for x in results]
@@ -294,9 +331,7 @@ def batch_process(input_dir: str, output_dir: str, sigma: float = 0.1, overwrite
         print(f"- Median: {np.median(psnr_values):.2f} dB")
         print(f"- Range: [{np.min(psnr_values):.2f}, {np.max(psnr_values):.2f}] dB")
 
-
         plt.figure(figsize=(15, 5))
-
         plt.subplot(131)
         plt.hist(ssim_values, bins=20, color='skyblue', edgecolor='black')
         plt.title('SSIM Distribution')

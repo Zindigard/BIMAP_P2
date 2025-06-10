@@ -2,22 +2,22 @@ import subprocess
 import time
 
 scripts = [
-    "Extractor.py",
-    "Truth extractor.py",
-    "Denoising.py",
-    "Segmentaion.py",
-    "IOU.py",
-    "Grow rate and intensity.py"
+    ["Extractor.py"],
+    ["Truth extractor.py"],
+    ["Denoising.py"],
+    ["Segmentaion.py"],
+    ["IOU.py"],
+    ["Grow rate and intensity.py", "--pipeline"]  # Add the flag for pipeline mode
 ]
 
 for script in scripts:
     try:
-        print(f"\n🚀 Running {script}...")
+        print(f"Running {' '.join(script)}...")
         start_time = time.time()
 
         # Run script and wait for completion
         result = subprocess.run(
-            ["python", script],
+            ["python"] + script,  # Combine the command and arguments
             check=True,
             text=True,
             capture_output=True
@@ -25,15 +25,19 @@ for script in scripts:
 
         # Print output and time taken
         print(result.stdout)
-        print(f"✅ {script} completed in {time.time() - start_time:.2f}s")
+        elapsed = time.time() - start_time
+        print(f"{' '.join(script)} completed in {elapsed:.2f} seconds")
+
+        # Add sleep time between scripts
+        time.sleep(1.0)  # 1 second pause between scripts
 
     except subprocess.CalledProcessError as e:
-        print(f"❌ Error in {script}:")
+        print(f"Error in {' '.join(script)}:")
         print(e.stderr)
-        break  # Stop if any script fails (remove if you want to continue)
-
-    except FileNotFoundError:
-        print(f"⚠️ {script} not found. Check filename/spelling.")
         break
 
-print("\n✨ All scripts executed in order!")
+    except FileNotFoundError:
+        print(f"{' '.join(script)} not found. Check filename/spelling.")
+        break
+
+print("All scripts executed in order.")

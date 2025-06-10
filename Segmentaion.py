@@ -1,5 +1,6 @@
 import numpy as np
 import os
+
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 from cellpose import models, core, io, plot
 from pathlib import Path
@@ -7,6 +8,29 @@ from cellpose import utils
 import matplotlib.pyplot as plt
 from natsort import natsorted
 from skimage.io import imsave
+from skimage.morphology import remove_small_objects, binary_closing
+from skimage.segmentation import clear_border
+
+
+def post_process_masks(masks):
+    """Clean up segmentation masks"""
+
+    masks = masks.astype(np.int32)
+
+    cleaned_masks = np.zeros_like(masks)
+    max_label = masks.max()
+
+    # Only proceed if there are any labels
+    if max_label > 0:
+        for i in range(1, max_label + 1):
+            mask = masks == i
+            mask = remove_small_objects(mask, min_size=50)
+            mask = binary_closing(mask, footprint=np.ones((3, 3)))
+            mask = clear_border(mask)
+            if mask.sum() > 0:
+                cleaned_masks[mask] = i
+
+    return cleaned_masks
 
 
 def setup_paths():
@@ -90,10 +114,6 @@ def save_outlined_image(img_rg1, masks, path):
 
 
 def visualize_results(img_selected_channels, masks, flows, binary_mask, outlines, vis_img):
-    fig = plt.figure(figsize=(12, 5))
-    plot.show_segmentation(fig, img_selected_channels, masks, flows[0])
-    plt.tight_layout()
-    plt.show()
 
     plt.figure(figsize=(10, 10))
     plt.imshow(binary_mask, cmap='gray')
@@ -141,6 +161,9 @@ def process_image(file, model, output_dir, brightness_dir):
     img_selected_channels = select_channels(img_rg1)
 
     masks, flows, styles = run_segmentation(model, img_selected_channels)
+
+    # Apply post-processing to the masks
+    masks = post_process_masks(masks)
 
     vis_img = load_visualization_image(img_rg1, brightness_dir, file)
 

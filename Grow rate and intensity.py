@@ -3,6 +3,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from skimage.measure import regionprops
 import tifffile
+import argparse
 
 
 def find_matching_files(sam_folder, brightness_folder):
@@ -131,7 +132,7 @@ def plot_cell_intensities(image, mask, cell_num):
     plt.show()
 
 
-def analyze_image_pair(mask_path, image_path):
+def analyze_image_pair(mask_path, image_path, pipeline_mode=False):
     """Main analysis function for one image/mask pair"""
     print(f"\nProcessing {mask_path} and {image_path}")
 
@@ -141,8 +142,16 @@ def analyze_image_pair(mask_path, image_path):
     regions = regionprops(masks)
     print(f"Found {len(regions)} cells in the mask")
 
-    # Get user selection
-    selected_cells = get_user_selection(regions)
+    if pipeline_mode:
+        # Predefined cells to analyze in pipeline mode
+        predefined_cells = [77, 108, 199]
+        selected_cells = [cell for cell in predefined_cells if 1 <= cell <= len(regions)]
+        if not selected_cells:
+            print(f"No predefined cells found in this image (available: 1-{len(regions)})")
+            return
+    else:
+        # Get user selection in interactive mode
+        selected_cells = get_user_selection(regions)
 
     fig, ax = plt.subplots(figsize=(10, 10))
     display_img = display_image(ax, image)
@@ -174,6 +183,12 @@ def analyze_image_pair(mask_path, image_path):
 
 def main():
     """Main program entry point"""
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description='Cell analysis script')
+    parser.add_argument('--pipeline', action='store_true',
+                       help='Run in pipeline mode with predefined cells')
+    args = parser.parse_args()
+
     sam_folder = Path(r"C:\Users\zindi\PycharmProjects\P2\Evaluations\SAM")
     brightness_folder = Path(r"C:\Users\zindi\PycharmProjects\P2\train_brightness")
 
@@ -184,31 +199,36 @@ def main():
         print("No matching file pairs found!")
         return
 
-    # Display available files
-    print("\nFound the following file pairs:")
-    for i, (mask_path, image_path) in enumerate(file_pairs, 1):
-        print(f"{i}: {mask_path.name} with {image_path.name}")
+    if args.pipeline:
+        # Pipeline mode - process all files with predefined cells
+        for mask_path, image_path in file_pairs:
+            analyze_image_pair(mask_path, image_path, pipeline_mode=True)
+    else:
+        # Free mode - interactive selection
+        print("\nFound the following file pairs:")
+        for i, (mask_path, image_path) in enumerate(file_pairs, 1):
+            print(f"{i}: {mask_path.name} with {image_path.name}")
 
-    # Get user selection
-    while True:
-        try:
-            selection = input(f"\nEnter which file to process (1-{len(file_pairs)}), or 'all': ")
+        # Get user selection
+        while True:
+            try:
+                selection = input(f"\nEnter which file to process (1-{len(file_pairs)}), or 'all': ")
 
-            if selection.lower() == 'all':
-                # Process all files
-                for mask_path, image_path in file_pairs:
-                    analyze_image_pair(mask_path, image_path)
-                break
-            else:
-                # Process single selected file
-                selected_idx = int(selection) - 1
-                if 0 <= selected_idx < len(file_pairs):
-                    mask_path, image_path = file_pairs[selected_idx]
-                    analyze_image_pair(mask_path, image_path)
+                if selection.lower() == 'all':
+                    # Process all files
+                    for mask_path, image_path in file_pairs:
+                        analyze_image_pair(mask_path, image_path)
                     break
-                print(f"Please enter a number between 1 and {len(file_pairs)}")
-        except ValueError:
-            print("Please enter a valid number or 'all'")
+                else:
+                    # Process single selected file
+                    selected_idx = int(selection) - 1
+                    if 0 <= selected_idx < len(file_pairs):
+                        mask_path, image_path = file_pairs[selected_idx]
+                        analyze_image_pair(mask_path, image_path)
+                        break
+                    print(f"Please enter a number between 1 and {len(file_pairs)}")
+            except ValueError:
+                print("Please enter a valid number or 'all'")
 
 
 if __name__ == "__main__":

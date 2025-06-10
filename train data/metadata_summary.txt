@@ -5,17 +5,17 @@ File: WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM.czi
 - Acquisition Date: N/A
 - Microscope Model: N/A
 - Pixel Size: N/A µm (X), N/A µm (Y)
-- Processing Timestamp: 2025-06-10 18:31:20
+- Processing Timestamp: 2025-06-10 22:33:41
 
 File: WT_NADA_RADA_HADA_NHS_40min_ROI2_SIM.czi
 - Acquisition Date: N/A
 - Microscope Model: N/A
 - Pixel Size: N/A µm (X), N/A µm (Y)
-- Processing Timestamp: 2025-06-10 18:31:20
+- Processing Timestamp: 2025-06-10 22:33:41
 
 File: WT_NADA_RADA_HADA_NHS_40min_ROI3_SIM.czi
 - Acquisition Date: N/A
 - Microscope Model: N/A
 - Pixel Size: N/A µm (X), N/A µm (Y)
-- Processing Timestamp: 2025-06-10 18:31:20
+- Processing Timestamp: 2025-06-10 22:33:42
 

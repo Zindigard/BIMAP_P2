@@ -3,8 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from skimage import io
 
-
-def evaluate_and_visualize_masks(pred_path, gt_path, output_path):
+def evaluate_and_visualize_masks(pred_path, gt_path, output_path, interactive=False):
     os.makedirs(output_path, exist_ok=True)
 
     def calculate_metrics(pred, gt):
@@ -29,9 +28,9 @@ def evaluate_and_visualize_masks(pred_path, gt_path, output_path):
 
     def create_visualization(pred, gt, filename, metrics):
         overlay = np.zeros((*pred.shape, 3))
-        overlay[gt == 1] = [0, 1, 0]  # Ground truth - green
-        overlay[pred == 1] = [1, 0, 0]  # Prediction - red
-        overlay[np.logical_and(pred, gt)] = [0.5, 0, 0.5]  # Overlap - purple
+        overlay[gt == 1] = [0, 1, 0]  # Green for ground truth
+        overlay[pred == 1] = [1, 0, 0]  # Red for prediction
+        overlay[np.logical_and(pred, gt)] = [0.5, 0, 0.5]  # Purple for overlap
 
         plt.figure(figsize=(12, 6))
         plt.imshow(overlay)
@@ -56,22 +55,23 @@ def evaluate_and_visualize_masks(pred_path, gt_path, output_path):
         )
 
         plt.gcf().text(0.82, 0.70, metrics_text,
-                       bbox=dict(facecolor='white', alpha=0.8, boxstyle='round'),
-                       fontsize=9, fontfamily='monospace')
+                     bbox=dict(facecolor='white', alpha=0.8, boxstyle='round'),
+                     fontsize=9, fontfamily='monospace')
 
         output_file = os.path.join(output_path, f"{os.path.splitext(filename)[0]}_eval.png")
         plt.savefig(output_file, bbox_inches='tight', dpi=150)
-        plt.show()  # Show plot normally
+        plt.close()
         return output_file
 
     results = []
     pred_files = [f for f in os.listdir(pred_path) if f.endswith('_binary.tif')]
 
     for pred_file in pred_files:
-        user_input = input(f"\nDo you want to process '{pred_file}'? (y/n): ").strip().lower()
-        if user_input not in ('y', 'yes'):
-            print(f"[SKIPPED] {pred_file}")
-            continue
+        if interactive:
+            user_input = input(f"\nDo you want to process '{pred_file}'? (y/n): ").strip().lower()
+            if user_input not in ('y', 'yes'):
+                print(f"[SKIPPED] {pred_file}")
+                continue
 
         try:
             gt_file = pred_file.replace('_binary', '_mask')
@@ -99,23 +99,23 @@ def evaluate_and_visualize_masks(pred_path, gt_path, output_path):
         except Exception as e:
             print(f"[ERROR] Processing {pred_file}: {str(e)}")
 
-    csv_path = os.path.join(output_path, 'segmentation_metrics.csv')
-    with open(csv_path, 'w') as f:
-        f.write("Image,IoU,Precision,Accuracy,TP,FP,FN,TN,Visualization\n")
-        for r in results:
-            f.write(f"{r['image']},{r['iou']},{r['precision']},{r['accuracy']},"
-                    f"{r['tp']},{r['fp']},{r['fn']},{r['tn']},{r['visualization']}\n")
+    if results:
+        csv_path = os.path.join(output_path, 'segmentation_metrics.csv')
+        with open(csv_path, 'w') as f:
+            f.write("Image,IoU,Precision,Accuracy,TP,FP,FN,TN,Visualization\n")
+            for r in results:
+                f.write(f"{r['image']},{r['iou']},{r['precision']},{r['accuracy']},"
+                       f"{r['tp']},{r['fp']},{r['fn']},{r['tn']},{r['visualization']}\n")
 
     print(f"\nEvaluation complete. Processed {len(results)} images.")
     print(f"Results saved to: {output_path}")
     return results
 
-
-# Example usage
 if __name__ == "__main__":
-    # Use default backend (interactive backend removed)
+    #  use interactive mode
     results = evaluate_and_visualize_masks(
         pred_path=r"C:\Users\zindi\PycharmProjects\P2\Evaluations\SAM",
         gt_path=r"C:\Users\zindi\PycharmProjects\P2\Evaluations\Ground",
-        output_path=r"C:\Users\zindi\PycharmProjects\P2\Evaluations\Results"
+        output_path=r"C:\Users\zindi\PycharmProjects\P2\Evaluations\Results",
+        interactive=False
     )
