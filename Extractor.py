@@ -198,11 +198,9 @@ def find_matching_true_folder(czi_filename: str, true_root_folder: str) -> str:
     Find matching folder in the True directory based on filename patterns.
     Returns the full path if found, None otherwise.
     """
-    # Extract the base pattern from the CZI filename (e.g., "WT_NADA_RADA_HADA_NHS_40min_ROI1")
-    base_pattern = czi_filename.split('.')[0]  # Remove extension
-    base_pattern = '_'.join(base_pattern.split('_')[:-1])  # Remove last part (like "SIM" or "DIC")
+    base_pattern = czi_filename.split('.')[0]  #  extension
+    base_pattern = '_'.join(base_pattern.split('_')[:-1])  #
 
-    # Search through all subfolders in the True folder
     for root, dirs, files in os.walk(true_root_folder):
         for dir_name in dirs:
             if base_pattern in dir_name:
@@ -332,10 +330,8 @@ def process_and_save_brightness_tiff(input_path: str, output_path: str, brightne
                 except:
                     continue
 
-        # Enhance brightness
         enhanced_image = enhance_brightness(image, brightness_factor)
 
-        # Save enhanced image with filtered metadata
         tifffile.imwrite(
             output_path,
             enhanced_image,

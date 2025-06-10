@@ -4,27 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="13bde384-ce8b-4e5f-afa0-fdecfbfeae95" name="Changes" comment="Updatedv seg">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Denoising.py" beforeDir="false" afterPath="$PROJECT_DIR$/Denoising.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Evaluations/Results/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM_binary_comparison.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Evaluations/Results/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM_binary_eval.png" beforeDir="false" afterPath="$PROJECT_DIR$/Evaluations/Results/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM_binary_eval.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Evaluations/Results/segmentation_metrics.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Evaluations/Results/segmentation_metrics.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Evaluations/SAM/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM_binary.tif" beforeDir="false" afterPath="$PROJECT_DIR$/Evaluations/SAM/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM_binary.tif" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Evaluations/SAM/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM_masks.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Evaluations/SAM/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM_masks.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Evaluations/SAM/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM_outlined.tif" beforeDir="false" afterPath="$PROJECT_DIR$/Evaluations/SAM/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM_outlined.tif" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grow rate and intensity.py" beforeDir="false" afterPath="$PROJECT_DIR$/Grow rate and intensity.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IOU.py" beforeDir="false" afterPath="$PROJECT_DIR$/IOU.py" afterDir="false" />
+    <list default="true" id="13bde384-ce8b-4e5f-afa0-fdecfbfeae95" name="Changes" comment="Pipelinev2">
+      <change beforePath="$PROJECT_DIR$/Extractor.py" beforeDir="false" afterPath="$PROJECT_DIR$/Extractor.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Segmentaion.py" beforeDir="false" afterPath="$PROJECT_DIR$/Segmentaion.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run all.py" beforeDir="false" afterPath="$PROJECT_DIR$/run all.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train data/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM.tif" beforeDir="false" afterPath="$PROJECT_DIR$/train data/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM.tif" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train data/WT_NADA_RADA_HADA_NHS_40min_ROI2_SIM.tif" beforeDir="false" afterPath="$PROJECT_DIR$/train data/WT_NADA_RADA_HADA_NHS_40min_ROI2_SIM.tif" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train data/metadata_summary.txt" beforeDir="false" afterPath="$PROJECT_DIR$/train data/metadata_summary.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_brightness/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM.tif" beforeDir="false" afterPath="$PROJECT_DIR$/train_brightness/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM.tif" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_brightness/WT_NADA_RADA_HADA_NHS_40min_ROI2_SIM.tif" beforeDir="false" afterPath="$PROJECT_DIR$/train_brightness/WT_NADA_RADA_HADA_NHS_40min_ROI2_SIM.tif" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_brightness/WT_NADA_RADA_HADA_NHS_40min_ROI3_SIM.tif" beforeDir="false" afterPath="$PROJECT_DIR$/train_brightness/WT_NADA_RADA_HADA_NHS_40min_ROI3_SIM.tif" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unpacked images/True/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM.tif" beforeDir="false" afterPath="$PROJECT_DIR$/unpacked images/True/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM/WT_NADA_RADA_HADA_NHS_40min_ROI1_SIM.tif" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unpacked images/True/WT_NADA_RADA_HADA_NHS_40min_ROI3_SIM/WT_NADA_RADA_HADA_NHS_40min_ROI3_SIM.tif" beforeDir="false" afterPath="$PROJECT_DIR$/unpacked images/True/WT_NADA_RADA_HADA_NHS_40min_ROI3_SIM/WT_NADA_RADA_HADA_NHS_40min_ROI3_SIM.tif" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Truth extractor.py" beforeDir="false" afterPath="$PROJECT_DIR$/Truth extractor.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,7 +73,7 @@
       <workItem from="1749501547234" duration="274000" />
       <workItem from="1749570666450" duration="335000" />
       <workItem from="1749571701490" duration="4801000" />
-      <workItem from="1749578162730" duration="8865000" />
+      <workItem from="1749578162730" duration="9198000" />
     </task>
     <task id="LOCAL-00001" summary="Updatedv2">
       <option name="closed" value="true" />
@@ -116,7 +99,23 @@
       <option name="project" value="LOCAL" />
       <updated>1749579697081</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Pipeline">
+      <option name="closed" value="true" />
+      <created>1749587699744</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1749587699744</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Pipelinev2">
+      <option name="closed" value="true" />
+      <created>1749587895065</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1749587895065</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -125,7 +124,9 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Updatedv2" />
     <MESSAGE value="Updatedv seg" />
-    <option name="LAST_COMMIT_MESSAGE" value="Updatedv seg" />
+    <MESSAGE value="Pipeline" />
+    <MESSAGE value="Pipelinev2" />
+    <option name="LAST_COMMIT_MESSAGE" value="Pipelinev2" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

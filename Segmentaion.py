@@ -84,10 +84,10 @@ def run_segmentation(model, img_selected_channels):
     masks, flows, styles = model.eval(
         img_selected_channels,
         batch_size=8,
-        diameter=None,  # Let Cellpose estimate diameter automatically
-        flow_threshold=0.8,  # Increased from 0.4 to reduce small artifacts
-        cellprob_threshold=0.0,  # Changed from 0.1 to better capture faint cells
-        min_size=15,  # Filter out very small objects
+        diameter=None,
+        flow_threshold=0.8,
+        cellprob_threshold=0.0,
+        min_size=15,
         stitch_threshold=0.0,  # Don't stitch cells
     )
     return masks, flows, styles
@@ -162,7 +162,6 @@ def process_image(file, model, output_dir, brightness_dir):
 
     masks, flows, styles = run_segmentation(model, img_selected_channels)
 
-    # Apply post-processing to the masks
     masks = post_process_masks(masks)
 
     vis_img = load_visualization_image(img_rg1, brightness_dir, file)

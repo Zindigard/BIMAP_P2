@@ -17,7 +17,7 @@ def visualize_rois_white_on_rgb(
     rois = read_roi_zip(roi_zip_path)
 
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     white = (255, 255, 255)
     line_thickness = 2
@@ -66,9 +66,9 @@ def visualize_rois_white_on_rgb(
 def create_interior_mask_from_roi_image(
         roi_image_path: str,
         output_mask_path: str = None,
-        line_threshold: int = 150,  # Adjust based on line brightness
+        line_threshold: int = 150,
         closing_kernel_size: int = 3,
-        min_contour_area: int = 5,  # Remove small noise
+        min_contour_area: int = 5,
 ) -> np.ndarray:
     """
     Creates a binary mask where regions inside white ROIs are 1.
