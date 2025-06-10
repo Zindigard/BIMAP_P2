@@ -57,10 +57,15 @@ def select_channels(img_rg1, channels=['0', '1', '2']):
 
 def run_segmentation(model, img_selected_channels):
     print("Running Cellpose segmentation...")
-    masks, flows, styles = model.eval(img_selected_channels, batch_size=8,
-                                       flow_threshold=0.4,
-                                       cellprob_threshold=0.1,
-                                       normalize={"tile_norm_blocksize": 0})
+    masks, flows, styles = model.eval(
+        img_selected_channels,
+        batch_size=8,
+        diameter=None,  # Let Cellpose estimate diameter automatically
+        flow_threshold=0.8,  # Increased from 0.4 to reduce small artifacts
+        cellprob_threshold=0.0,  # Changed from 0.1 to better capture faint cells
+        min_size=15,  # Filter out very small objects
+        stitch_threshold=0.0,  # Don't stitch cells
+    )
     return masks, flows, styles
 
 
