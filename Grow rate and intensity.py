@@ -166,7 +166,7 @@ def analyze_image_pair(mask_path, image_path, pipeline_mode=False):
 
         print(f"\nCell {cell_num}:")
         print(f"  Major Axis: {major_px:.1f} px ({major_px * PIXEL_SIZE_NM:.1f} mm)")
-        print(f"  Half Major Axis (centroid to endpoint): {half_major_px:.1f} px ({half_major_nm:.1f} mm)")
+        print(f"  Half Major Axis (centroid to endpoint): {half_major_px/2:.1f} px ({half_major_nm/2:.1f} mm)")
         print(f"  Minor Axis: {minor_px:.1f} px")
         print(f"  Growth Rate (half axis): {growth_rate:.2f} mm/min")
 

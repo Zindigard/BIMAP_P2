@@ -136,7 +136,7 @@ def calculate_quality_metrics(original: np.ndarray, denoised: np.ndarray) -> Dic
 
 
 def visualize_comparison(original: np.ndarray, denoised: np.ndarray, metrics: Dict):
-    """Enhanced visualization with metrics overlay.
+    """Enhanced visualization with metrics overlay and white background for difference map.
 
     Args:
         original: Original image in [0,1] range
@@ -160,13 +160,21 @@ def visualize_comparison(original: np.ndarray, denoised: np.ndarray, metrics: Di
     )
     ax2.axis('off')
 
-    # Enhanced difference
+    # Enhanced difference with white background
     difference = np.abs(original - denoised)
     difference = (difference - difference.min()) / (difference.max() - difference.min() + 1e-10)
+
+    # Create a white background (set all pixels to 1)
+    white_bg = np.ones_like(difference)
+
+    # Blend difference with white background (adjust alpha as needed)
+    alpha = 0.7  # Transparency of difference over white background
+    blended_diff = white_bg * (1 - alpha) + difference * alpha
+
     ax3 = plt.subplot(1, 3, 3)
-    im = ax3.imshow(difference, cmap='jet', vmin=0, vmax=1)
+    im = ax3.imshow(blended_diff, cmap='jet', vmin=0, vmax=1)
     plt.colorbar(im, ax=ax3, fraction=0.046, pad=0.04)
-    ax3.set_title("Enhanced Difference Map")
+    ax3.set_title("Difference Map (White Background)")
     ax3.axis('off')
 
     plt.tight_layout()
@@ -272,6 +280,7 @@ def process_single_image(file_path: Path, output_dir: Path, sigma: float = 0.1,
         save_metrics_to_txt(metrics, metrics_file)  # Save metrics to TXT
 
         visualize_comparison(img, denoised, metrics)
+
         return True, metrics
 
     except Exception as e:
